@@ -1,0 +1,35 @@
+﻿@implements IDisposable
+
+<div class="slider-container">
+    <button class="slider-arrow left" @onclick="Prev">&#10094;</button>
+
+    <img src="@imagenes[currentIndex]" class="slider-image" alt="Banner ZonaPC" />
+
+    <button class="slider-arrow right" @onclick="Next">&#10095;</button>
+</div>
+
+@code {
+    private int currentIndex = 0;
+    private Timer? timer;
+
+    private string[] imagenes = new[]
+    {
+        "https://i.postimg.cc/Hs86sqCr/196.jpg",
+        "https://i.postimg.cc/FHtDfT9D/203.jpg",
+        "https://i.postimg.cc/hGcsshQm/Note-Aorus.webp"
+    };
+
+    protected override void OnInitialized()
+    {
+        timer = new Timer(_ =>
+        {
+            currentIndex = (currentIndex + 1) % imagenes.Length;
+            InvokeAsync(StateHasChanged);
+        }, null, 5000, 5000); // cambia cada 5 segundos
+    }
+
+    private void Next() => currentIndex = (currentIndex + 1) % imagenes.Length;
+    private void Prev() => currentIndex = (currentIndex - 1 + imagenes.Length) % imagenes.Length;
+
+    public void Dispose() => timer?.Dispose();
+}

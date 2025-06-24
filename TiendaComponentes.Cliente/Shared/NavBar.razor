@@ -1,0 +1,114 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using TiendaComponentes.Cliente.Services
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="navbar d-flex align-items-center justify-content-between px-3">
+    <!-- LOGO -->
+    <a class="navbar-brand" href="/">
+        <img src="https://i.postimg.cc/wBkhYC8L/zonapc.png" alt="ZonaPC" style="height: 80px; width: 90px;" />
+    </a>
+
+    <!-- ENLACES DE NAVEGACION CON DROPDOWNS -->
+    <div class="d-flex align-items-center gap-4 navbar-links">
+        <div class="nav-item-dropdown">
+            <span class="nav-link text-dark">Notebooks ▼</span>
+            <div class="dropdown-menu">
+                <button class="dropdown-item item-gamer" @onclick='() => Navigation.NavigateTo("/notebooks?subcategoria=Gaming", true)'>
+                    <span class="dot dot-gamer"></span> Gaming
+                </button>
+                <button class="dropdown-item item-oficina" @onclick='() => Navigation.NavigateTo("/notebooks?subcategoria=Oficina", true)'>
+                    <span class="dot dot-oficina"></span> Oficina / Hogar
+                </button>
+                <hr class="dropdown-divider" />
+                <button class="dropdown-item" @onclick='() => Navigation.NavigateTo("/notebooks", true)'>
+                    🖥️ Ver todas las Notebooks
+                </button>
+            </div>
+        </div>
+
+        <div class="nav-item-dropdown">
+            <span class="nav-link text-dark">Placas de Video ▼</span>
+            <div class="dropdown-menu">
+                <button class="dropdown-item item-nvidia" @onclick='() => Navigation.NavigateTo("/placas-video?subcategoria=Nvidia", true)'>
+                    <span class="dot dot-nvidia"></span> Nvidia
+                </button>
+                <button class="dropdown-item item-amd" @onclick='() => Navigation.NavigateTo("/placas-video?subcategoria=AMD", true)'>
+                    <span class="dot dot-amd"></span> AMD
+                </button>
+                <hr class="dropdown-divider" />
+                <button class="dropdown-item" @onclick='() => Navigation.NavigateTo("/placas-video", true)'>
+                    🎮 Ver todas las Placas
+                </button>
+            </div>
+        </div>
+
+        <a class="nav-link text-dark" href="/contacto">Contacto</a>
+    </div>
+
+
+
+    <!-- LOGIN / USUARIO + CARRITO -->
+    <div class="ms-auto d-flex align-items-center gap-2">
+        <button class="btn btn-outline-dark btn-sm" @onclick="IrACarrito">
+            <i class="fas fa-shopping-cart"></i>
+        </button>
+
+        @if (estaLogueado)
+        {
+            <a href="/mis-pedidos" class="btn btn-outline-dark ms-2">
+                📦 Mis pedidos
+            </a>
+        }
+
+        @if (!string.IsNullOrEmpty(nombreUsuario))
+        {
+            <span class="me-2">👋 Hola, @nombreUsuario</span>
+            <button class="btn btn-outline-danger btn-sm" @onclick="CerrarSesion">Cerrar sesión</button>
+        }
+        else
+        {
+            <a class="btn btn-outline-primary btn-sm" href="/login">Iniciar sesión</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/register">Registrarse</a>
+        }
+    </div>
+</div>
+
+
+@code {
+    private string? nombreUsuario;
+    private bool estaLogueado = false;
+
+
+    // Cargar nombre del usuario desde localStorage
+    protected override async Task OnInitializedAsync()
+    {
+        nombreUsuario = await LocalStorage.GetItemAsync<string>("userNombre");
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+
+        estaLogueado = !string.IsNullOrEmpty(token);
+    }
+
+
+    // Método para cerrar sesión
+    private async Task CerrarSesion()
+    {
+        await LocalStorage.RemoveItemAsync("authToken");
+        await LocalStorage.RemoveItemAsync("userEmail");
+        await LocalStorage.RemoveItemAsync("userNombre");
+
+        nombreUsuario = null;
+
+        // Redirigir al login
+        Navigation.NavigateTo("/", forceLoad: true);
+
+        StateHasChanged();
+    }
+
+    // Método para redirigir al carrito
+    private void IrACarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }
+}

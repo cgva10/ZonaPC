@@ -1,0 +1,150 @@
+﻿@page "/finalizar-compra"
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager Navigation
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@using TiendaComponentes.Shared.DTOs
+
+<div class="checkout-container">
+    <h2 class="checkout-title">🧾 Confirmación de tu Pedido</h2>
+
+    @if (cargando)
+    {
+        <p class="checkout-loading">Cargando resumen de tu compra...</p>
+    }
+    else if (carrito == null || carrito.Count == 0)
+    {
+        <div class="checkout-empty">
+            <p>No hay productos en tu carrito.</p>
+            <a class="btn-outline" href="/">Volver al inicio</a>
+        </div>
+    }
+    else if (compraConfirmada)
+    {
+        <div class="checkout-confirmado">
+            <h3>¡Gracias por tu compra! 🎉</h3>
+            <p>Tu pedido fue procesado correctamente.</p>
+            <a class="btn-primary" href="/">Volver a la tienda</a>
+            <a class="btn-outline" href="/mis-pedidos">Ver mis pedidos 📦</a>
+        </div>
+    }
+    else
+    {
+        <div class="checkout-resumen">
+            <table class="checkout-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th></th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in carrito)
+                    {
+                        <tr>
+                            <td>@item.Nombre</td>
+                            <td><img src="@item.ImagenUrl" alt="@item.Nombre" style="height:50px" /></td>
+                            <td>@item.Cantidad</td>
+                            <td>$@item.Precio.ToString("N0")</td>
+                            <td>$@((item.Precio * item.Cantidad).ToString("N0"))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="checkout-total">
+                <p>Subtotal: <strong>$@Subtotal.ToString("N0")</strong></p>
+
+                @if (CostoEnvio > 0)
+                {
+                    <p>📦 Envío: <strong>$@CostoEnvio.ToString("N0")</strong></p>
+                }
+
+                @if (ProvinciaSeleccionada != "-" && LocalidadSeleccionada != "-")
+                {
+                    <p>📍 Envío a: <strong>@ProvinciaSeleccionada, @LocalidadSeleccionada</strong></p>
+                }
+
+                <hr />
+                <h5>Total a pagar: <strong>$@Total.ToString("N0")</strong></h5>
+            </div>
+
+            <button class="btn-confirmar" @onclick="ConfirmarCompra">Confirmar Compra</button>
+        </div>
+    }
+</div>
+
+@code {
+    private HttpClient Http => ClientFactory.CreateClient("ApiAutenticada");
+    private List<ItemCarritoDTO> carrito = new();
+    private bool compraConfirmada = false;
+    private bool cargando = true;
+
+    private string ProvinciaSeleccionada = "-";
+    private string LocalidadSeleccionada = "-";
+    private decimal CostoEnvio = 0;
+
+    private decimal Subtotal => carrito.Sum(p => p.Precio * p.Cantidad);
+    private decimal Total => Subtotal + CostoEnvio;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            carrito = await LocalStorage.GetItemAsync<List<ItemCarritoDTO>>("carritoFinalizado") ?? new();
+            ProvinciaSeleccionada = await LocalStorage.GetItemAsync<string>("provinciaSeleccionada") ?? "-";
+            LocalidadSeleccionada = await LocalStorage.GetItemAsync<string>("localidadSeleccionada") ?? "-";
+            CostoEnvio = await LocalStorage.GetItemAsync<decimal>("costoEnvioSeleccionado");
+        }
+        catch
+        {
+            carrito = new();
+        }
+        cargando = false;
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        if (string.IsNullOrWhiteSpace(ProvinciaSeleccionada) || string.IsNullOrWhiteSpace(LocalidadSeleccionada) ||
+            ProvinciaSeleccionada == "-" || LocalidadSeleccionada == "-")
+        {
+            Console.WriteLine("Faltan datos de envío.");
+            return;
+        }
+
+        var pedido = new PedidoInputDTO
+        {
+            Provincia = ProvinciaSeleccionada,
+            Localidad = LocalidadSeleccionada
+        };
+
+        var response = await Http.PostAsJsonAsync("api/pedidos/finalizar", pedido);
+        var contenido = await response.Content.ReadAsStringAsync();
+
+        if (response.IsSuccessStatusCode)
+        {
+            await LocalStorage.RemoveItemAsync("carritoFinalizado");
+            await LocalStorage.RemoveItemAsync("costoEnvioSeleccionado");
+            await LocalStorage.RemoveItemAsync("provinciaSeleccionada");
+            await LocalStorage.RemoveItemAsync("localidadSeleccionada");
+
+            compraConfirmada = true;
+        }
+        else if ((int)response.StatusCode == 400 && contenido.Contains("ya está vacío", StringComparison.OrdinalIgnoreCase))
+        {
+            // 🔁 Si el carrito ya está vacío, asumimos que el pedido fue registrado antes
+            compraConfirmada = true;
+            Console.WriteLine("Advertencia (pedido ya registrado previamente): " + contenido);
+        }
+        else
+        {
+            Console.WriteLine("❌ Error al finalizar la compra:");
+            Console.WriteLine(contenido);
+        }
+
+        StateHasChanged(); // 🔄 Forzar re-render siempre al final
+    }
+
+}

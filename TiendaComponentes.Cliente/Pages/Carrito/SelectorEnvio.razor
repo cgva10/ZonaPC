@@ -1,0 +1,91 @@
+﻿@inject IHttpClientFactory ClientFactory
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@using TiendaComponentes.Shared.DTO
+@using Microsoft.AspNetCore.Components
+
+<div class="mb-3">
+    <label>Provincia:</label>
+    <select class="form-control" @onchange="OnProvinciaChanged">
+        <option disabled selected value="">Seleccioná provincia</option>
+        @foreach (var prov in provincias)
+        {
+            <option value="@prov.Id">@prov.Nombre</option>
+        }
+    </select>
+</div>
+
+@if (localidades?.Any() == true)
+{
+    <div class="mb-3">
+        <label>Localidad:</label>
+        <select class="form-control" @onchange="OnLocalidadChanged">
+            <option disabled selected value="">Seleccioná localidad</option>
+            @foreach (var loc in localidades)
+            {
+                <option value="@loc.Nombre">@loc.Nombre</option>
+            }
+        </select>
+    </div>
+}
+
+@code {
+    private HttpClient Http => ClientFactory.CreateClient("ApiAutenticada");
+
+    private List<ProvinciaDTO> provincias = new();
+    private List<LocalidadDTO> localidades = new();
+    private string? provinciaSeleccionada;
+
+    [Parameter]
+    public EventCallback<decimal> OnCambioCostoEnvio { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        provincias = await Http.GetFromJsonAsync<List<ProvinciaDTO>>("api/envios/provincias");
+    }
+
+    private async Task OnProvinciaChanged(ChangeEventArgs e)
+    {
+        provinciaSeleccionada = e.Value?.ToString();
+        localidades.Clear();
+
+        if (!string.IsNullOrWhiteSpace(provinciaSeleccionada))
+        {
+            localidades = await Http.GetFromJsonAsync<List<LocalidadDTO>>(
+                $"api/envios/localidades?provinciaId={provinciaSeleccionada}");
+
+            var nombreProvincia = provincias.FirstOrDefault(p => p.Id == provinciaSeleccionada)?.Nombre ?? provinciaSeleccionada;
+            await LocalStorage.SetItemAsync("provinciaSeleccionada", nombreProvincia);
+            await LocalStorage.RemoveItemAsync("localidadSeleccionada");
+        }
+    }
+
+    private async Task OnLocalidadChanged(ChangeEventArgs e)
+    {
+        var localidadSeleccionada = e.Value?.ToString();
+        var nombreProvincia = provincias.FirstOrDefault(p => p.Id == provinciaSeleccionada)?.Nombre ?? "";
+
+        decimal costo = nombreProvincia switch
+        {
+            "Ciudad Autónoma de Buenos Aires" => 1000,
+            "Buenos Aires" or "Santa Fe" => 1500,
+            "Córdoba" => 1800,
+            "Mendoza" => 1900,
+            "Tucumán" => 2000,
+            "San Juan" or "San Luis" or "La Rioja" or "Catamarca" or "Chaco" or "Santiago del Estero" => 2200,
+            "Jujuy" or "Misiones" => 2300,
+            "Neuquén" or "Río Negro" or "Formosa" => 2400,
+            "Chubut" => 2500,
+            "Santa Cruz" => 2700,
+            "Tierra del Fuego, Antártida e Islas del Atlántico Sur" => 3000,
+            "Corrientes" => 2100,
+            "Entre Ríos" => 1900,
+            "La Pampa" => 2000,
+            _ => 2500
+        };
+
+        await LocalStorage.SetItemAsync("localidadSeleccionada", localidadSeleccionada);
+        await LocalStorage.SetItemAsync("costoEnvioSeleccionado", costo);
+
+        await OnCambioCostoEnvio.InvokeAsync(costo);
+    }
+}

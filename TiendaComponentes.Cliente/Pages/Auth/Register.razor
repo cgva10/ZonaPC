@@ -1,0 +1,53 @@
+﻿@page "/register"
+@using TiendaComponentes.Cliente.Services
+@using TiendaComponentes.Shared.DTOs
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="register-container">
+    <h3 class="register-title">Registro</h3>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="error-message">@error</p>
+    }
+
+
+    @if (registroExitoso)
+    {
+        <div class="toast-success">
+            ✅ ¡Registro exitoso! Redirigiendo al login...
+        </div>
+    }
+
+
+    <EditForm Model="@registro" OnValidSubmit="RegistrarUsuario" class="register-form">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+        <InputText @bind-Value="registro.Nombre" placeholder="Nombre" class="form-control mb-2" />
+        <InputText @bind-Value="registro.Email" placeholder="Email" class="form-control mb-2" />
+        <InputText @bind-Value="registro.Contrasena" type="password" placeholder="Contraseña" class="form-control mb-3" />
+        <button type="submit" class="btn btn-primary">Registrarme</button>
+    </EditForm>
+</div>
+
+@code {
+    private UsuarioRegistroDTO registro = new();
+    private bool registroExitoso = false;
+    private string error = string.Empty;
+
+    private async Task RegistrarUsuario()
+    {
+        var success = await AuthService.Register(registro);
+        if (success)
+        {
+            registroExitoso = true;
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+        else
+        {
+            error = "No se pudo registrar. ¿Ya existe un usuario con ese email?";
+        }
+    }
+}

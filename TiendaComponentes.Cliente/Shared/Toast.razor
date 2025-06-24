@@ -1,0 +1,23 @@
+﻿<!-- Shared/Toast.razor -->
+@if (Visible)
+{
+    <div class="toast-notificacion">
+        @Mensaje
+    </div>
+}
+
+@code {
+    [Parameter] public string Mensaje { get; set; } = "";
+    public bool Visible { get; set; }
+
+    public async Task Mostrar(string mensaje)
+    {
+        Mensaje = mensaje;
+        Visible = true;
+        StateHasChanged();
+
+        await Task.Delay(2500);
+        Visible = false;
+        StateHasChanged();
+    }
+}

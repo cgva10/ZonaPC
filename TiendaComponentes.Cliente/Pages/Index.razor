@@ -1,0 +1,118 @@
+﻿@page "/"
+@using TiendaComponentes.Shared.DTOs
+@inject NavigationManager Navigation
+@inject IHttpClientFactory ClientFactory
+
+<Toast @ref="toast" />
+
+<!-- BANNER -->
+<BannerSlider />
+
+<!-- PRODUCTOS DESTACADOS -->
+<div class="max-w-7xl mx-auto px-4 mt-8">
+    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800 tracking-wide uppercase">
+        Productos Destacados
+    </h2>
+
+    @MostrarBloque("Notebook Gamer", notebooksGamer, "bloque-gamer")
+    @MostrarBloque("Notebook Oficina", notebooksOficina, "bloque-oficina")
+    @MostrarBloque("Placas Nvidia", placasNvidia, "bloque-nvidia")
+    @MostrarBloque("Placas AMD", placasRadeon, "bloque-amd")
+</div>
+
+<Footer />
+
+@code {
+    private HttpClient Http => ClientFactory.CreateClient("ApiAutenticada");
+    private Toast? toast;
+
+    private List<ProductoDTO> notebooksGamer = new();
+    private List<ProductoDTO> notebooksOficina = new();
+    private List<ProductoDTO> placasNvidia = new();
+    private List<ProductoDTO> placasRadeon = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        notebooksGamer = await CargarProductos("Notebook", "Gaming");
+        notebooksOficina = await CargarProductos("Notebook", "Oficina");
+        placasNvidia = await CargarProductos("Placas de Video", "Nvidia");
+        placasRadeon = await CargarProductos("Placas de Video", "AMD");
+    }
+
+    private async Task<List<ProductoDTO>> CargarProductos(string categoria, string subcategoria)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<List<ProductoDTO>>(
+            $"api/producto/filtrar?categoria={categoria}&subcategoria={subcategoria}"
+        );
+            return response ?? new List<ProductoDTO>();
+        }
+        catch
+        {
+            return new List<ProductoDTO>();
+        }
+    }
+
+    private RenderFragment MostrarBloque(string titulo, List<ProductoDTO> productos, string claseCss) => @<div class="@claseCss">
+        <h3 class="text-xl font-semibold mb-3 text-gray-700">@titulo</h3>
+
+        @if (productos == null || !productos.Any())
+    {
+        <p class="text-gray-500">No hay productos disponibles.</p>
+    }
+    else
+    {
+        <div class="bloque-carrusel">
+            <button class="carrusel-btn carrusel-prev" @onclick="() => ScrollCarrusel(claseCss, -1)">‹</button>
+            <div class="carrusel-productos" id="@claseCss">
+                @foreach (var producto in productos)
+            {
+                <div class="tarjeta-producto min-w-[240px]">
+                    <a href="/producto/@producto.Id" class="enlace-producto"></a>
+                    <div class="img-container">
+                        <img src="@producto.ImagenUrl" alt="@producto.Nombre" />
+                    </div>
+                    <h3>@producto.Nombre</h3>
+                    <p class="categoria">@producto.CategoriaAmigable</p>
+                    <p class="precio">$@producto.Precio.ToString("N0")</p>
+                    <button class="boton-agregar" @onclick="() => AgregarAlCarrito(producto.Id, producto.Nombre)">🛒 Agregar al carrito</button>
+                </div>
+            }
+            </div>
+            <button class="carrusel-btn carrusel-next" @onclick="() => ScrollCarrusel(claseCss, 1)">›</button>
+        </div>
+    }
+    </div>;
+
+    private async Task AgregarAlCarrito(int productoId, string nombre)
+    {
+        var dto = new { ProductoId = productoId, Cantidad = 1 };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/carrito/agregar", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                toast?.Mostrar($"✅ {nombre} agregado al carrito");
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                toast?.Mostrar($"❌ Error al agregar: {error}");
+            }
+        }
+        catch (Exception ex)
+        {
+            toast?.Mostrar($"❌ Error: {ex.Message}");
+        }
+    }
+
+    private async Task ScrollCarrusel(string id, int direction)
+    {
+        await JS.InvokeVoidAsync("scrollCarrusel", id, direction);
+    }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+}

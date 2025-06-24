@@ -1,0 +1,130 @@
+﻿@page "/mis-pedidos"
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Components.Authorization
+@using TiendaComponentes.Shared.DTOs
+@using System.Net.Http.Json
+
+<h2 class="text-2xl font-bold mb-4">📦 Mis Pedidos</h2>
+
+@if (cargando)
+{
+    <p>Cargando tus pedidos...</p>
+}
+else if (pedidos.Count == 0)
+{
+    <div class="pedidos-container text-center">
+        <div class="pedido-card" style="max-width: 600px; margin: auto;">
+            <div style="font-size: 3rem;">📭</div>
+            <p class="mt-3" style="font-size: 1.1rem; color: #6b7280;">
+                Aún no realizaste ningún pedido.
+            </p>
+            <button class="btn btn-outline-primary mt-3" @onclick="@(() => Navigation.NavigateTo("/"))">
+                Ir a la tienda
+            </button>
+        </div>
+    </div>
+}
+
+else
+{
+    @foreach (var pedido in pedidos)
+    {
+        <div class="pedido-card">
+            <div class="pedido-header">
+                <div>
+                    <i class="fas fa-receipt text-primary me-2"></i>
+                    Pedido del @pedido.Fecha.ToString("dd/MM/yyyy HH:mm")
+                </div>
+                <div class="text-success fw-bold">
+                    Total: $@pedido.Total.ToString("N0")
+                </div>
+                @if (pedido.CostoEnvio > 0)
+                {
+                    <div class="text-muted">
+                        📦 Envío: $@pedido.CostoEnvio.ToString("N0")
+                    </div>
+                }
+            </div>
+
+            <div class="pedido-info">
+                <p><i class="fas fa-flag me-1 text-muted"></i> Provincia: <strong>@(pedido.Provincia ?? "-")</strong></p>
+                <p><i class="fas fa-map-pin me-1 text-muted"></i> Localidad: <strong>@(pedido.Localidad ?? "-")</strong></p>
+
+                <p>
+                    <i class="fas fa-circle me-1 @ObtenerClaseEstado(pedido.Estado.ToString())"></i>
+                    Estado:
+                    <span class="@ObtenerClaseTexto(pedido.Estado.ToString())">
+                        @pedido.Estado
+                    </span>
+                </p>
+            </div>
+
+            <table class="productos-table">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in pedido.Detalles)
+                    {
+                        <tr>
+                            <td><img src="@item.ImagenUrl" alt="@item.NombreProducto" style="height:50px; max-width: 60px;" /></td>
+                            <td>@item.NombreProducto</td>
+                            <td>@item.Cantidad</td>
+                            <td>$@item.PrecioUnitario.ToString("N0")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    private HttpClient Http => ClientFactory.CreateClient("ApiAutenticada");
+    private List<PedidoConDetallesDTO> pedidos = new();
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            pedidos = await Http.GetFromJsonAsync<List<PedidoConDetallesDTO>>("api/pedidos") ?? new();
+        }
+        catch
+        {
+            pedidos = new();
+        }
+        cargando = false;
+    }
+
+    private string ObtenerClaseEstado(string estado)
+    {
+        return estado switch
+        {
+            "Pendiente" => "text-warning",
+            "EnCamino" => "text-primary",
+            "Entregado" => "text-success",
+            "Cancelado" => "text-danger",
+            _ => "text-secondary"
+        };
+    }
+
+    private string ObtenerClaseTexto(string estado)
+    {
+        return estado switch
+        {
+            "Pendiente" => "fw-bold text-warning",
+            "EnCamino" => "fw-bold text-primary",
+            "Entregado" => "fw-bold text-success",
+            "Cancelado" => "fw-bold text-danger",
+            _ => "fw-bold text-muted"
+        };
+    }
+}

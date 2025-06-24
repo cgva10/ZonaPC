@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZonaPC</title>
+    <base href="/" />
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+
+    <!-- Favicon para navegadores -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+
+    <!-- Iconos para dispositivos móviles -->
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
+
+
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+
+    <link href="TiendaComponentes.Cliente.styles.css" rel="stylesheet" />
+    <link href="estilos.css" rel="stylesheet" />
+    <link href="css/main.css" rel="stylesheet" />
+    <link href="css/index.css" rel="stylesheet" />
+    <link href="css/login.css" rel="stylesheet" />
+    <link href="css/register.css" rel="stylesheet" />
+    <link href="css/finalizar-compra.css" rel="stylesheet" />
+    <link href="css/carrito.css" rel="stylesheet" />
+    <link href="css/mis-pedidos.css" rel="stylesheet" />
+    <link href="css/detalle-producto.css" rel="stylesheet" />
+    <link href="css/slider.css" rel="stylesheet" />
+    <link href="css/footer.css" rel="stylesheet" />
+    <link href="css/navbar.css" rel="stylesheet" />
+    <link href="css/contacto.css" rel="stylesheet" />
+    <link href="css/notebooks.css" rel="stylesheet" />
+    <link href="css/placasvideo.css" rel="stylesheet" />
+
+
+
+</head>
+
+<body>
+    <div id="app">
+        <div class="progress w-50" style="position: relative; margin-top:20%; left: 27%">
+            <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: var(--blazor-load-percentage, 0%)">
+            </div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const progressBar = document.querySelector('.progress-bar');
+            const appDiv = document.getElementById('app');
+
+            const interval = setInterval(() => {
+                const raw = getComputedStyle(progressBar).getPropertyValue('--blazor-load-percentage');
+                const match = raw.match(/\d+/);
+                const percent = match ? parseInt(match[0], 10) : 0;
+
+                if (percent >= 100) {
+                    clearInterval(interval);
+                    appDiv.setAttribute("data-loaded", "true");
+                }
+            }, 50);
+        });
+        
+        window.scrollCarrusel = (id, direction) => {
+            const container = document.getElementById(id);
+            if (container) {
+                const scrollAmount = 300;
+            container.scrollBy({left: scrollAmount * direction, behavior: 'smooth' });
+            }
+        };
+
+
+
+    </script>
+
+</body>
+
+
+</html>

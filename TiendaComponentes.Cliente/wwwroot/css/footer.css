@@ -1,0 +1,62 @@
+﻿.footer {
+    position: relative;
+    background: url('https://i.postimg.cc/pTgqDCfW/image.png') center/cover no-repeat;
+    padding-top: 2rem;
+    padding-bottom: 2.5rem;
+    margin-top: 4rem;
+    color: white;
+    font-family: sans-serif;
+}
+
+
+.footer-overlay {
+    background-color: rgba(0, 0, 0, 0.75);
+    padding: 2rem;
+    text-align: center;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+    .footer-content h5 {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .footer-content p {
+        margin: 0.25rem 0;
+    }
+
+.footer-afip {
+    height: 60px;
+    border-radius: 4px;
+}
+
+.footer-copy {
+    font-size: 0.85rem;
+    margin-top: 1rem;
+}
+
+/* WhatsApp flotante */
+.whatsapp-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+}
+
+    .whatsapp-float img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+    }
+
+        .whatsapp-float img:hover {
+            transform: scale(1.1);
+        }

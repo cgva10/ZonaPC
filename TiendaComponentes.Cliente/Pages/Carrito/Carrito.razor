@@ -1,0 +1,243 @@
+﻿@page "/carrito"
+@inject IHttpClientFactory ClientFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Net.Http.Json
+@using TiendaComponentes.Shared.DTOs
+
+<h2 class="text-2xl font-bold mb-4">🛒 Tu carrito</h2>
+
+@if (carrito == null)
+{
+    <p>Cargando...</p>
+}
+else if (carrito.Productos == null || carrito.Productos.Count == 0)
+{
+    @if (!estaAutenticado)
+    {
+        <div class="carrito-empty-card">
+            <div class="carrito-empty-icon">🔒</div>
+                <div class="carrito-empty-msg">
+                    Debes iniciar sesión para agregar productos al carrito.
+                </div>
+            <div class="carrito-empty-buttons">
+                <button class="btn btn-outline-primary" @onclick="@(() => Navigation.NavigateTo("/login"))">Iniciar sesión</button>
+                <button class="btn btn-outline-secondary" @onclick="@(() => Navigation.NavigateTo("/register"))">Registrarse</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-cart-box">
+            <span class="empty-cart-icon">🛒</span>
+            <p class="empty-cart-text">Tu carrito está vacío.</p>
+            <a href="/" class="btn btn-outline-primary">Volver a la tienda</a>
+        </div>
+    }
+}
+
+else
+{
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2">
+            <table class="table table-striped w-full">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Producto</th>
+                        <th>Imagen</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in carrito.Productos)
+                    {
+                        <tr>
+                            <td>
+                                <button class="btn btn-sm btn-danger" @onclick="() => EliminarProducto(item.ProductoId)">🗑</button>
+                            </td>
+                            <td>@item.Nombre</td>
+                            <td><img src="@item.ImagenUrl" style="height: 60px;" /></td>
+                            <td>$@item.Precio.ToString("N0")</td>
+                            <td>
+                                <div class="flex items-center gap-1 justify-center">
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, -1)">-</button>
+                                    <div style="min-width: 32px;">@item.Cantidad</div>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            title="@(item.Cantidad >= item.Stock ? "Stock máximo alcanzado" : null)"
+                                            @onclick="() => CambiarCantidad(item.ProductoId, 1)"
+                                            disabled="@(item.Cantidad >= item.Stock)">
+                                        +
+                                    </button>
+
+                                </div>
+                            </td>
+                            <td class="fw-bold">$@((item.Precio * item.Cantidad).ToString("N0"))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="border rounded p-4 bg-light">
+            <h4 class="mb-3">🧾 Totales del carrito</h4>
+
+            <SelectorEnvio OnCambioCostoEnvio="OnCambioCosto" />
+
+            <p>Subtotal: <strong>$@Subtotal.ToString("N0")</strong></p>
+
+            @if (costoEnvio > 0)
+            {
+                <p>📦 Envío: <strong>$@costoEnvio.ToString("N0")</strong></p>
+            }
+
+            <hr />
+            <h5>Total: <strong>$@Total.ToString("N0")</strong></h5>
+
+            <div class="mt-3 flex flex-col gap-2">
+                @if (estaAutenticado)
+                {
+                    <button class="btn btn-success"
+                        @onclick="FinalizarCompra"
+                        disabled="@hayProductosFueraDeStock">
+                        Finalizar compra
+                    </button>
+
+                }
+                else
+                {
+                    <p class="text-red-600">Debes iniciar sesión para finalizar la compra</p>
+                    <div class="flex gap-2">
+                        <button class="btn btn-outline-primary" @onclick="@(() => Navigation.NavigateTo("api/login"))">Iniciar sesión</button>
+                        <button class="btn btn-outline-secondary" @onclick="@(() => Navigation.NavigateTo("api/register"))">Registrarse</button>
+                    </div>
+                }
+                @if (mostrarErrorEnvio)
+                {
+                    <p class="text-danger mt-2">Por favor, seleccioná una provincia y una localidad antes de finalizar la compra.</p>
+                }
+                @if (mostrandoError)
+                {
+                    <p class="text-danger mt-2">@errorFinalizacion</p>
+                }
+                @if (hayProductosFueraDeStock)
+                {
+                    <p class="text-danger mt-2">
+                        ⚠️ Uno o más productos en tu carrito tienen una cantidad mayor al stock disponible.
+                        Por favor, ajustá las cantidades antes de finalizar la compra.
+                    </p>
+                }
+
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private HttpClient Http => ClientFactory.CreateClient("ApiAutenticada");
+    private CarritoDTO? carrito;
+    private bool estaAutenticado = false;
+    private string? provinciaSeleccionada;
+    private string? localidadSeleccionada;
+    private bool mostrarErrorEnvio = false;
+    private string? errorFinalizacion;
+    private bool mostrandoError = false;
+    private bool hayProductosFueraDeStock = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        estaAutenticado = auth.User.Identity?.IsAuthenticated ?? false;
+
+        try
+        {
+            carrito = await Http.GetFromJsonAsync<CarritoDTO>("api/carrito");
+            hayProductosFueraDeStock = carrito?.Productos.Any(p => p.Cantidad > p.Stock) ?? false;
+        }
+        catch
+        {
+            carrito = new CarritoDTO { Productos = new List<ItemCarritoDTO>() };
+        }
+
+    }
+
+    private async Task CambiarCantidad(int productoId, int cambio)
+    {
+        var item = carrito?.Productos.FirstOrDefault(p => p.ProductoId == productoId);
+        if (item == null) return;
+
+        var nuevaCantidad = item.Cantidad + cambio;
+        if (nuevaCantidad <= 0)
+        {
+            await EliminarProducto(productoId);
+            return;
+        }
+
+        var dto = new { ProductoId = productoId, Cantidad = cambio };
+        var response = await Http.PutAsJsonAsync("api/carrito/cambiar-cantidad", dto);
+        if (response.IsSuccessStatusCode)
+        {
+            await OnInitializedAsync();
+        }
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {
+        var response = await Http.DeleteAsync($"api/carrito/eliminar/{productoId}");
+        if (response.IsSuccessStatusCode)
+        {
+            await OnInitializedAsync();
+        }
+    }
+
+    private async Task FinalizarCompra()
+    {
+        provinciaSeleccionada = await LocalStorage.GetItemAsync<string>("provinciaSeleccionada");
+        localidadSeleccionada = await LocalStorage.GetItemAsync<string>("localidadSeleccionada");
+
+        mostrandoError = false;
+        errorFinalizacion = null;
+
+        if (string.IsNullOrWhiteSpace(provinciaSeleccionada) ||
+            string.IsNullOrWhiteSpace(localidadSeleccionada) ||
+            provinciaSeleccionada == "-" || localidadSeleccionada == "-")
+        {
+            mostrarErrorEnvio = true;
+            return;
+        }
+
+        var input = new PedidoInputDTO
+        {
+            Provincia = provinciaSeleccionada!,
+            Localidad = localidadSeleccionada!
+        };
+
+        if (carrito is not null && carrito.Productos.Any())
+        {
+                await LocalStorage.SetItemAsync("carritoFinalizado", carrito.Productos);
+        }
+
+        Navigation.NavigateTo("/finalizar-compra");
+
+    }
+
+
+    private decimal costoEnvio = 0;
+    private decimal Subtotal => carrito?.Productos.Sum(p => p.Precio * p.Cantidad) ?? 0;
+    private decimal Total => Subtotal + costoEnvio;
+
+    private async Task OnCambioCosto(decimal nuevoPrecio)
+    {
+        costoEnvio = nuevoPrecio;
+        provinciaSeleccionada = await LocalStorage.GetItemAsync<string>("provinciaSeleccionada");
+        localidadSeleccionada = await LocalStorage.GetItemAsync<string>("localidadSeleccionada");
+        mostrarErrorEnvio = false;
+    }
+
+}

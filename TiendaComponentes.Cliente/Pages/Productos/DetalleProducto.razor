@@ -1,0 +1,220 @@
+﻿@page "/producto/{id:int}"
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Components.Authorization
+@using TiendaComponentes.Shared.DTOs
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Web
+
+<h2 class="titulo-producto">Detalle del producto</h2>
+
+@if (producto == null)
+{
+    <p class="text-center text-gray-500">Cargando producto...</p>
+}
+else
+{
+    <div class="detalle-producto-container">
+        <!-- Columna izquierda: galería de imágenes -->
+        <div class="detalle-img">
+            <div class="galeria-contenedor">
+                <button class="flecha-galeria" @onclick="IrAnterior">&#8249;</button>
+                <img src="@imagenSeleccionada" alt="@producto?.Nombre" class="img-principal" />
+                <button class="flecha-galeria" @onclick="IrSiguiente">&#8250;</button>
+            </div>
+
+            @if (producto.ImagenesUrl?.Count > 1)
+            {
+                <div class="miniaturas">
+                    @foreach (var img in producto.ImagenesUrl)
+                    {
+                        <img src="@img"
+                             class="miniatura @(img == imagenSeleccionada ? "activa" : "")"
+                             @onclick="() => imagenSeleccionada = img" />
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Columna derecha: info -->
+        <div class="detalle-info">
+            <h3>@producto.Nombre</h3>
+            <p class="categoria">@producto.CategoriaAmigable - @producto.Subcategoria</p>
+            <p class="descripcion">@producto.Descripcion</p>
+            <p class="precio">$@producto.Precio.ToString("N0")</p>
+            <p class="stock">Stock disponible: @producto.Stock</p>
+
+            <div class="acciones flex flex-col gap-2">
+                @if (producto.Stock > 0)
+                {
+                    <div class="flex items-center gap-2">
+                        <button class="btn btn-sm btn-outline-secondary"
+                                @onclick="() => CambiarCantidad(-1)"
+                                disabled="@(cantidad <= 1)">
+                            -
+                        </button>
+
+                        <span>@cantidad</span>
+
+                        <button class="btn btn-sm btn-outline-secondary"
+                                @onclick="() => CambiarCantidad(1)"
+                                disabled="@(cantidad >= producto.Stock)">
+                            +
+                        </button>
+                    </div>
+
+                    @if (estaAutenticado)
+                    {
+                        <button class="btn-agregar"
+                                @onclick="AgregarAlCarrito">
+                            🛒 Agregar al carrito
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="text-sm text-red-600 mt-2">
+                            🔒 Iniciá sesión para agregar productos al carrito.
+                        </div>
+                        <div class="flex gap-2 mt-1">
+                            <button class="btn btn-outline-primary" @onclick="@(() => Navigation.NavigateTo("/login"))">Iniciar sesión</button>
+                            <button class="btn btn-outline-secondary" @onclick="@(() => Navigation.NavigateTo("/register"))">Registrarse</button>
+                        </div>
+                    }
+
+                }
+                else
+                {
+                    <p class="text-red-600 text-lg font-semibold">
+                        ❌ Producto sin stock disponible
+                    </p>
+                    <button class="btn btn-secondary" disabled>
+                        🛒 No disponible
+                    </button>
+                }
+
+                <button class="btn-volver" @onclick="VolverSegunCategoria">
+                    ⬅ Volver
+                </button>
+
+                @if (errorStock is not null)
+                {
+                    <p class="text-danger mt-1">@errorStock</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container">
+        @foreach (var id in toastIds)
+        {
+            <div class="toast-detalle-producto">
+                ✔️ Producto agregado al carrito
+            </div>
+        }
+    </div>
+
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+
+    private HttpClient Http => ClientFactory.CreateClient("ApiAutenticada");
+    private ProductoDTO? producto;
+    private List<Guid> toastIds = new();
+    private string imagenSeleccionada = string.Empty;
+    private int imagenActualIndex = 0;
+    private int cantidad = 1;
+    private string? errorStock = null;
+    private bool estaAutenticado = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        estaAutenticado = auth.User.Identity?.IsAuthenticated ?? false;
+
+        producto = await Http.GetFromJsonAsync<ProductoDTO>($"api/producto/{id}");
+        imagenSeleccionada = producto?.ImagenesUrl?.FirstOrDefault() ?? producto?.ImagenUrl ?? "";
+
+        // Reiniciar cantidad si hay stock
+        if (producto?.Stock > 0)
+        {
+            cantidad = 1;
+        }
+    }
+
+    private async Task AgregarAlCarrito()
+    {
+        if (producto == null || producto.Stock == 0) return;
+
+        if (cantidad > producto.Stock)
+        {
+            errorStock = "No hay suficiente stock disponible.";
+            return;
+        }
+
+        errorStock = null;
+
+        var dto = new { ProductoId = producto.Id, Cantidad = cantidad };
+        var response = await Http.PostAsJsonAsync("api/carrito/agregar", dto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var id = Guid.NewGuid();
+            toastIds.Add(id);
+            StateHasChanged();
+
+            await Task.Delay(3000);
+            toastIds.Remove(id);
+            StateHasChanged();
+        }
+    }
+
+
+    private void CambiarCantidad(int delta)
+    {
+        var nuevaCantidad = cantidad + delta;
+
+        if (nuevaCantidad >= 1 && nuevaCantidad <= producto?.Stock)
+        {
+            cantidad = nuevaCantidad;
+        }
+    }
+
+    private void VolverSegunCategoria()
+    {
+        if (producto == null)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        switch (producto.Categoria)
+        {
+            case "Notebook":
+                Navigation.NavigateTo("/notebooks");
+                break;
+            case "PlacaDeVideo":
+                Navigation.NavigateTo("/placas-video");
+                break;
+            default:
+                Navigation.NavigateTo("/");
+                break;
+        }
+    }
+
+    private void IrSiguiente()
+    {
+        if (producto?.ImagenesUrl == null || producto.ImagenesUrl.Count <= 1) return;
+        imagenActualIndex = (imagenActualIndex + 1) % producto.ImagenesUrl.Count;
+        imagenSeleccionada = producto.ImagenesUrl[imagenActualIndex];
+    }
+
+    private void IrAnterior()
+    {
+        if (producto?.ImagenesUrl == null || producto.ImagenesUrl.Count <= 1) return;
+        imagenActualIndex = (imagenActualIndex - 1 + producto.ImagenesUrl.Count) % producto.ImagenesUrl.Count;
+        imagenSeleccionada = producto.ImagenesUrl[imagenActualIndex];
+    }
+}

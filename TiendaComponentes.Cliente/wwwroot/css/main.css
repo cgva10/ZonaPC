@@ -1,0 +1,29 @@
+﻿
+/* main.css - estilos generales */
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.content {
+    margin-top: 1rem;
+}
+img {
+    max-width: 100%;
+    height: auto;
+}
+a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+    a:hover {
+        text-decoration: underline;
+    }

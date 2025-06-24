@@ -1,0 +1,84 @@
+﻿@page "/notebooks"
+@using TiendaComponentes.Shared.DTOs
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager Navigation
+
+<h2 class="titulo-seccion">Notebooks @(!string.IsNullOrEmpty(subcategoria) ? $"- {subcategoria}" : "")</h2>
+
+@if (productos == null)
+{
+    <p class="text-center text-gray-500">Cargando productos...</p>
+}
+else if (!productos.Any())
+{
+    <p class="text-center text-gray-500">No hay productos disponibles.</p>
+}
+else
+{
+    <p class="text-sm text-gray-500 mb-4 text-center">@productos.Count() resultado(s)</p>
+    <div class="productos-grid">
+        @foreach (var producto in productos)
+        {
+            <div class="tarjeta-producto">
+                <a href="/producto/@producto.Id" class="enlace-producto"></a>
+                <div class="img-container">
+                    <img src="@producto.ImagenUrl" alt="@producto.Nombre" />
+                </div>
+                <h3>@producto.Nombre</h3>
+                <p class="categoria">@producto.CategoriaAmigable</p>
+                <p class="precio">$@producto.Precio.ToString("N0")</p>
+                <button class="boton-agregar" @onclick="@(() => AgregarAlCarrito(producto.Id, producto.Nombre))">
+                    🛒 Agregar al carrito
+                </button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private HttpClient Http => ClientFactory.CreateClient("ApiAutenticada");
+    private List<ProductoDTO> productos = new();
+    private string? subcategoria;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("subcategoria", out var sub))
+            subcategoria = sub;
+
+        var url = "api/producto/filtrar?categoria=Notebook";
+        if (!string.IsNullOrEmpty(subcategoria))
+            url += $"&subcategoria={subcategoria}";
+
+        try
+        {
+            productos = await Http.GetFromJsonAsync<List<ProductoDTO>>(url) ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error cargando notebooks: {ex.Message}");
+            productos = new();
+        }
+    }
+
+    private async Task AgregarAlCarrito(int productoId, string nombre)
+    {
+        var dto = new { ProductoId = productoId, Cantidad = 1 };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/carrito/agregar", dto);
+            Console.WriteLine(response.IsSuccessStatusCode
+                ? $"✅ {nombre} agregado al carrito"
+                : $"❌ Error al agregar: {await response.Content.ReadAsStringAsync()}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al agregar al carrito: {ex.Message}");
+        }
+    }
+}

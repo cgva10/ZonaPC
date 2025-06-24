@@ -1,0 +1,190 @@
+﻿/* Navbar principal */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 2rem;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1000;
+    overflow: visible;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Ajuste para los botones de login, logout, y carrito */
+.navbar .btn {
+    font-size: 14px;
+    border-radius: 25px;
+    padding: 8px 15px;
+}
+
+.navbar .btn-outline-dark {
+    border: 1px solid #ced4da;
+    background-color: transparent;
+    color: #495057;
+}
+
+.navbar .btn-outline-primary {
+    border: 1px solid #007bff;
+    background-color: transparent;
+    color: #007bff;
+}
+
+.navbar .btn-outline-danger {
+    border: 1px solid #dc3545;
+    background-color: transparent;
+    color: #dc3545;
+}
+
+/* Ajuste para los iconos */
+.navbar .fa-shopping-cart {
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* Estilos cuando el usuario está logueado */
+.navbar .ms-auto {
+    display: flex;
+    align-items: center;
+}
+
+/* Aseguramos que el carrito esté a la izquierda de "Hola, nombre" cuando esté logueado */
+.navbar .d-flex {
+    display: flex;
+    gap: 20px;
+}
+
+    /* Ajustes cuando el usuario no está logueado */
+    .navbar .d-flex.gap-3 {
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+/* Dropdown hover básico */
+.nav-item-dropdown {
+    position: relative;
+}
+
+    .nav-item-dropdown .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 180px;
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+        padding: 0.5rem 0;
+        display: none;
+        z-index: 1000;
+        overflow: hidden; /* ✅ Previene desbordes feos en hover */
+    }
+
+    .nav-item-dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+.dropdown-menu a {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #1f2937;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+    .dropdown-menu a:hover {
+        background-color: #f3f4f6;
+        color: #2563eb;
+    }
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+}
+
+.ver-todas {
+    font-weight: 600;
+    color: #111827;
+    padding: 0.5rem 1rem;
+}
+
+    .ver-todas:hover {
+        background-color: #f9fafb;
+        color: #2563eb;
+    }
+
+.dropdown-item {
+    all: unset;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    color: #1f2937;
+    transition: background-color 0.3s ease, color 0.3s ease; /* 🪄 transiciones suaves */
+    border-radius: 0.25px;
+}
+
+
+    .dropdown-item:hover {
+        background-color: #f3f4f6;
+        color: #2563eb;
+    }
+/* Dot base */
+.dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.dot-gamer {
+    background-color: #7c3aed; /* violeta fuerte */
+}
+
+/* Dot Oficina = gris azulado */
+.dot-oficina {
+    background-color: #3b82f6; /* azul suave */
+}
+/* Nvidia = verde */
+.dot-nvidia {
+    background-color: #76b900;
+}
+
+/* AMD = rojo */
+.dot-amd {
+    background-color: #e53935;
+}
+/* Hover Gamer */
+.item-gamer:hover {
+    background-color: #f3e8ff; /* violeta claro */
+    color: #6d28d9;
+}
+
+/* Hover Oficina */
+.item-oficina:hover {
+    background-color: #e0f2fe; /* celeste claro */
+    color: #1e40af;
+}
+
+/* Hover específico para Nvidia */
+.item-nvidia:hover {
+    background-color: #ecf9e2; /* verde muy claro */
+    color: #4c8c00; /* verde oscuro */
+}
+
+/* Hover específico para AMD */
+.item-amd:hover {
+    background-color: #ffe8e8; /* rojo muy claro */
+    color: #b71c1c; /* rojo oscuro */
+}

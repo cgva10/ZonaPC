@@ -1,0 +1,53 @@
+﻿@page "/login"
+@using TiendaComponentes.Cliente.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="login-container">
+    <h2 class="login-title">Iniciar sesión</h2>
+
+    @if (errorMessage != null)
+    {
+        <p class="error-message">@errorMessage</p>
+    }
+
+    <EditForm Model="@loginModel" OnValidSubmit="IniciarSesion" class="login-form">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputText @bind-Value="loginModel.Email" placeholder="Email" class="form-control mb-3" />
+        <InputText @bind-Value="loginModel.Contrasena" placeholder="Contraseña" type="password" class="form-control mb-3" />
+
+        <button type="submit" class="btn btn-primary">Ingresar</button>
+    </EditForm>
+
+    <div class="text-center mt-3">
+        <span>¿No tenés cuenta?</span>
+        <a href="/register" class="text-blue-600 font-semibold hover:underline">Registrate</a>
+    </div>
+</div>
+
+@code {
+    private UsuarioLoginDTO loginModel = new UsuarioLoginDTO();
+    private string? errorMessage;
+
+    private async Task IniciarSesion()
+    {
+        var loginResponse = await AuthService.Login(loginModel.Email, loginModel.Contrasena, Navigation);
+
+        if (loginResponse != null)
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "Credenciales inválidas.";
+        }
+    }
+
+    public class UsuarioLoginDTO
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Contrasena { get; set; } = string.Empty;
+    }
+}

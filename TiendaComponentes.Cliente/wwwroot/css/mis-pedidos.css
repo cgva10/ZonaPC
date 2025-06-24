@@ -1,0 +1,72 @@
+﻿.pedidos-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.pedido-card {
+    background-color: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+}
+
+.pedido-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+.pedido-card:hover {
+    transform: scale(1.01);
+}
+.pedido-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #4b5563;
+}
+
+.pedido-info {
+    font-size: 0.95rem;
+    color: #4b5563;
+    margin-bottom: 1rem;
+}
+
+.productos-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+    .productos-table th,
+    .productos-table td {
+        padding: 0.6rem;
+        font-size: 0.95rem;
+    }
+
+    .productos-table th {
+        background-color: #f3f4f6;
+        font-weight: 600;
+    }
+
+    .productos-table td img {
+        height: 50px;
+        object-fit: contain;
+    }
+.pedido-card.empty {
+    text-align: center;
+    padding: 2rem;
+    border: 1px dashed #d1d5db;
+    background-color: #f9fafb;
+    transition: none;
+    box-shadow: none;
+}
+
+    .pedido-card.empty:hover {
+        transform: none;
+    }
