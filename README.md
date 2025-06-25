@@ -32,7 +32,7 @@ La solución implementa buenas prácticas de desarrollo moderno: API RESTful con
 
 ### Cliente Blazor (ZonaPC)
 - ✅ Navegación por categorías y subcategorías (Notebooks, Placas de Video, etc.)
-- ✅ Visualización de productos con imágenes, precios, y descuentos
+- ✅ Visualización de productos con imágenes y precios.
 - ✅ Registro y login de usuarios
 - ✅ Carrito de compras persistente
 - ✅ Finalización de compra y generación de pedido
