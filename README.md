@@ -23,10 +23,10 @@ La solución implementa buenas prácticas de desarrollo moderno: API RESTful con
 ## 🧩 Estructura del Proyecto
 
 /TiendaComponentes
-├── TiendaComponentes.API → API RESTful (.NET 9)
-├── TiendaComponentes.Shared → DTOs y modelos compartidos
-├── TiendaComponentes.Cliente → Frontend en Blazor WebAssembly
-└── TiendaComponentes.Admin → Aplicación de escritorio (WinForms)
+-- TiendaComponentes.API → API RESTful (.NET 9)
+-- TiendaComponentes.Shared → DTOs y modelos compartidos
+-- TiendaComponentes.Cliente → Frontend en Blazor WebAssembly
+-- TiendaComponentes.Admin → Aplicación de escritorio (WinForms)
 
 ---
 
