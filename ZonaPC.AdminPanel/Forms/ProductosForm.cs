@@ -59,7 +59,7 @@ namespace ZonaPC.WinForms
                 btn.Cursor = Cursors.Hand;
             }
 
-            // Texto con emojis para cada acción
+            // Texto con emojis para cada accion
             btnAgregar.Text = "➕ Agregar";
             btnModificar.Text = "✏️ Modificar";
             btnEliminar.Text = "🗑 Eliminar";
@@ -127,7 +127,7 @@ namespace ZonaPC.WinForms
 
         private async void BtnAgregar_Click(object sender, EventArgs e)
         {
-            var form = new ProductoForm(); // lo creamos ahora en el siguiente paso
+            var form = new ProductoForm(); 
             if (form.ShowDialog() == DialogResult.OK)
             {
                 var response = await _httpClient.PostAsJsonAsync("producto", form.Producto);

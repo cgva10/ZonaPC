@@ -35,7 +35,7 @@ namespace ZonaPC.WinForms
             // Imagen principal
             await CargarImagenAsync(_producto.ImagenUrl, picPrincipal);
 
-            // Galería
+            // Galeria
             if (_producto.ImagenesUrl != null)
             {
                 foreach (var url in _producto.ImagenesUrl)

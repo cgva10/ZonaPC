@@ -48,19 +48,18 @@
     cursor: pointer;
 }
 
-/* Estilos cuando el usuario está logueado */
+/* Estilos cuando el usuario esta logueado */
 .navbar .ms-auto {
     display: flex;
     align-items: center;
 }
 
-/* Aseguramos que el carrito esté a la izquierda de "Hola, nombre" cuando esté logueado */
 .navbar .d-flex {
     display: flex;
     gap: 20px;
 }
 
-    /* Ajustes cuando el usuario no está logueado */
+    /* Ajustes cuando el usuario no esta logueado */
     .navbar .d-flex.gap-3 {
         display: flex;
         justify-content: flex-start;
@@ -84,7 +83,7 @@
         padding: 0.5rem 0;
         display: none;
         z-index: 1000;
-        overflow: hidden; /* ✅ Previene desbordes feos en hover */
+        overflow: hidden;
     }
 
     .nav-item-dropdown:hover .dropdown-menu {
@@ -129,7 +128,7 @@
     padding: 0.5rem 1rem;
     font-size: 0.95rem;
     color: #1f2937;
-    transition: background-color 0.3s ease, color 0.3s ease; /* 🪄 transiciones suaves */
+    transition: background-color 0.3s ease, color 0.3s ease; 
     border-radius: 0.25px;
 }
 
@@ -138,7 +137,7 @@
         background-color: #f3f4f6;
         color: #2563eb;
     }
-/* Dot base */
+
 .dot {
     display: inline-block;
     width: 12px;
@@ -177,13 +176,13 @@
     color: #1e40af;
 }
 
-/* Hover específico para Nvidia */
+/* Hover especifico para Nvidia */
 .item-nvidia:hover {
     background-color: #ecf9e2; /* verde muy claro */
     color: #4c8c00; /* verde oscuro */
 }
 
-/* Hover específico para AMD */
+/* Hover especifico para AMD */
 .item-amd:hover {
     background-color: #ffe8e8; /* rojo muy claro */
     color: #b71c1c; /* rojo oscuro */

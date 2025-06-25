@@ -99,7 +99,7 @@ namespace ZonaPC.WinForms
 
         private void Guardar()
         {
-            // Validación de campos obligatorios
+            // Validacion de campos obligatorios
             if (string.IsNullOrWhiteSpace(txtNombre.Text) ||
                 string.IsNullOrWhiteSpace(txtDescripcion.Text) ||
                 string.IsNullOrWhiteSpace(txtPrecio.Text) ||
@@ -112,7 +112,7 @@ namespace ZonaPC.WinForms
                 return;
             }
 
-            // Validación de valores numéricos
+            // Validacion de valores numericos
             if (!decimal.TryParse(txtPrecio.Text, out var precio) || !int.TryParse(txtStock.Text, out var stock))
             {
                 MessageBox.Show("Precio y Stock deben ser valores numéricos válidos.", "Datos inválidos", MessageBoxButtons.OK, MessageBoxIcon.Error);

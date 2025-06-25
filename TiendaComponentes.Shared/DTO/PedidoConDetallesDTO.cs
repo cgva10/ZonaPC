@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TiendaComponentes.Shared.DTO; // Importar enum EstadoPedido
+using TiendaComponentes.Shared.DTO;
 
 
 namespace TiendaComponentes.Shared.DTOs

@@ -15,15 +15,14 @@ var culture = new CultureInfo("es-AR");
 CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
 
-// LocalStorage y autenticación
+// LocalStorage y autenticacion
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 
-// Servicio de autenticación
+// Servicio de autenticacion
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthProvider>();
 
-// HttpClient por defecto (para archivos de wwwroot como datos/envios.json)
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)

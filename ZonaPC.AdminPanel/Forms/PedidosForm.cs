@@ -136,7 +136,7 @@ namespace ZonaPC.WinForms
                     DataPropertyName = "Estado",
                     ValueType = typeof(EstadoPedido),
                     DataSource = Enum.GetValues(typeof(EstadoPedido)),
-                    ReadOnly = false // 👈 Este sí se puede editar
+                    ReadOnly = false 
                 };
 
                 var colEnvio = new DataGridViewTextBoxColumn
@@ -306,7 +306,7 @@ namespace ZonaPC.WinForms
             // Aplicar a toda la fila (excepto combo)
             row.DefaultCellStyle.BackColor = color;
 
-            // Aplicar también a la celda de estado manualmente
+            // Aplicar tambien a la celda de estado manualmente
             if (row.Cells["colEstado"] is DataGridViewCell estadoCell)
                 estadoCell.Style.BackColor = color;
         }

@@ -29,7 +29,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvProductos)).BeginInit();
             this.SuspendLayout();
 
-            // 🟦 panelBuscador
             var panelBuscador = new Panel
             {
                 Dock = DockStyle.Top,
@@ -67,7 +66,7 @@
             this.cmbBuscarPor = cmbBuscarPor;
             this.txtBuscar = txtBuscar;
 
-            // 🟦 dgvProductos
+            // dgvProductos
             this.dgvProductos.Dock = DockStyle.Fill;
             this.dgvProductos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvProductos.Name = "dgvProductos";
@@ -79,7 +78,7 @@
             this.dgvProductos.AllowUserToDeleteRows = false;
             this.dgvProductos.EditMode = DataGridViewEditMode.EditProgrammatically;
 
-            // 🟦 Botones
+            // Botones
             this.flowPanelBotones = new FlowLayoutPanel();
             this.btnAgregar = new Button();
             this.btnModificar = new Button();
@@ -121,7 +120,7 @@
             };
             panelInferior.Controls.Add(flowPanelBotones);
 
-            // 🧱 Final: ensamblar
+            // Final: ensamblar
             this.AutoScaleDimensions = new SizeF(8F, 20F);
             this.AutoScaleMode = AutoScaleMode.Font;
             this.ClientSize = new Size(784, 481);

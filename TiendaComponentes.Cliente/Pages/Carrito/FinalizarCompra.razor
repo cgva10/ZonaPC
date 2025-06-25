@@ -134,7 +134,7 @@
         }
         else if ((int)response.StatusCode == 400 && contenido.Contains("ya está vacío", StringComparison.OrdinalIgnoreCase))
         {
-            // 🔁 Si el carrito ya está vacío, asumimos que el pedido fue registrado antes
+            // 🔁 Si el carrito ya esta vacío, asumimos que el pedido fue registrado antes
             compraConfirmada = true;
             Console.WriteLine("Advertencia (pedido ya registrado previamente): " + contenido);
         }
@@ -144,7 +144,7 @@
             Console.WriteLine(contenido);
         }
 
-        StateHasChanged(); // 🔄 Forzar re-render siempre al final
+        StateHasChanged();
     }
 
 }

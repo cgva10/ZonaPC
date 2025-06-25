@@ -10,7 +10,6 @@ namespace ZonaPC.AdminPanel.Services
         {
             var handler = new HttpClientHandler
             {
-                // ✅ Ignorar certificado en entorno local
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
 

@@ -91,7 +91,7 @@
     }
 
 
-    // Método para cerrar sesión
+    // Metodo para cerrar sesión
     private async Task CerrarSesion()
     {
         await LocalStorage.RemoveItemAsync("authToken");
@@ -106,7 +106,7 @@
         StateHasChanged();
     }
 
-    // Método para redirigir al carrito
+    // Metodo para redirigir al carrito
     private void IrACarrito()
     {
         Navigation.NavigateTo("/carrito");
